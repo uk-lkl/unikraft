@@ -33,6 +33,10 @@
  * THIS HEADER MAY NOT BE EXTRACTED OR MODIFIED IN ANY WAY.
  */
 
+#include <uk/arch/types.h>
+#include <uk/arch/limits.h>
+#include <uk/config.h>
+
 .section .text
 
 .global _liblinuxuplat_start
@@ -52,3 +56,36 @@ _liblinuxuplat_start:
 	# Protection
 _liblinuxuplat_start_err:
 	jmp _liblinuxuplat_start_err
+
+#if HAVE_SCHED
+.global thread_starter
+thread_starter:
+	popq %rdi
+	popq %rbx
+	pushq $0
+	xorq %rbp, %rbp
+	call *%rbx
+	call exit_thread
+
+.global __arch_switch_threads
+__arch_switch_threads:
+	pushq %rbp
+	pushq %rbx
+	pushq %r12
+	pushq %r13
+	pushq %r14
+	pushq %r15
+	movq %rsp, (%rdi) /* save ESP */
+	movq (%rsi), %rsp /* restore ESP */
+	movq $1f, 8(%rdi) /* sace EIP */
+	pushq 8(%rsi)     /* restore EIP */
+	ret
+1:
+	popq %r15
+	popq %r14
+	popq %r13
+	popq %r12
+	popq %rbx
+	popq %rbp
+	ret
+#endif
