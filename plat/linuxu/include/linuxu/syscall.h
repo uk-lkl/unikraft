@@ -39,6 +39,9 @@
 #include <sys/types.h>
 #include <sys/select.h>
 #include <sys/time.h>
+#include <linuxu/signal.h>
+#include <linuxu/time.h>
+#include <linuxu/types.h>
 
 #if defined __X86_64__
 #include <linuxu/syscall-x86_64.h>
@@ -106,6 +109,41 @@ static inline int sys_pselect6(int nfds,
 			      (long) exceptfds,
 			      (long) timeout,
 			      (long) sigmask);
+}
+
+static inline int sys_sigaction(int signum,
+                const struct sigaction *act, struct sigaction *oldact)
+{
+        return (int) syscall3(__SC_SIGACTION,
+                              (long) signum,
+                              (long) act,
+                              (long) oldact);
+}
+
+static inline int sys_timer_create(clockid_t clockid,
+                struct sigevent *sevp, timer_t *timerid)
+{
+        return (int) syscall3(__SC_TIMER_CREATE,
+                              (long) clockid,
+                              (long) sevp,
+                              (long) timerid);
+}
+
+static inline int sys_timer_delete(timer_t timerid)
+{
+        return (int) syscall1(__SC_TIMER_DELETE,
+                              (long) timerid);
+}
+
+static inline int sys_timer_settime(timer_t timerid, int flags,
+                const struct itimerspec *new_value,
+                struct itimerspec *old_value)
+{
+        return (int) syscall4(__SC_TIMER_SETTIME,
+                              (long) timerid,
+                              (long) flags,
+                              (long) new_value,
+                              (long) old_value);
 }
 
 #endif /* __SYSCALL_H__ */

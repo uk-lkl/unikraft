@@ -47,6 +47,10 @@
 #define __SC_IOCTL  16
 #define __SC_EXIT   60
 #define __SC_PSELECT6 270
+#define __SC_SIGACTION 67
+#define __SC_TIMER_CREATE 259
+#define __SC_TIMER_DELETE 263
+#define __SC_TIMER_SETTIME 260
 
 /* NOTE: from linux-4.6.3 (arch/x86/entry/entry_64.S):
  *
