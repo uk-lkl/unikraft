@@ -36,12 +36,9 @@
  * Ported from Mini-OS
  */
 
-#include <ucontext.h>
 #include <uk/sched.h>
 #include <uk/plat/thread.h>
 #include <common/sched.h>
-
-static struct ukplat_thread_ctx *current_ctx = NULL;
 
 int ukplat_thread_ctx_init(struct ukplat_thread_ctx *ctx, void *stack,
 		void (*function)(void *), void *data)
@@ -49,22 +46,18 @@ int ukplat_thread_ctx_init(struct ukplat_thread_ctx *ctx, void *stack,
 	/* Call architecture specific setup. */
 	arch_thread_init(ctx, stack, function, data);
 
-        if (!current_ctx)
-          current_ctx = ctx;
-
 	return 0;
 }
 
 void ukplat_thread_ctx_switch(struct ukplat_thread_ctx *prev,
 		struct ukplat_thread_ctx *next)
 {
-  swapcontext(&prev->context, &next->context);
-  current_ctx = next;
+	switch_threads(prev, next);
 }
 
 struct ukplat_thread_ctx *ukplat_thread_ctx_current(void)
 {
-	return current_ctx;
+	return get_current_ctx();
 }
 
 void ukplat_thread_ctx_run_idle(struct ukplat_thread_ctx *ctx)

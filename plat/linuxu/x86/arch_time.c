@@ -58,8 +58,6 @@ static volatile uint64_t ticks = 0;
 static void timer_handler(int signum, siginfo_t *info, void *ctx)
 {
   ticks += 10;
-  if (thread_timer_tick() == INT_RESCHEDULE)
-    thread_preempt();
 }
 
 /* monotonic_clock(): returns # of nanoseconds passed since time_init()
