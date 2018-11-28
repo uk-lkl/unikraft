@@ -7,6 +7,24 @@ extern "C" {
 
 #include <linuxu/types.h>
 
+/* FIXME: the definitions are for x86_64 */
+ #define SA_NOCLDSTOP  1
+ #define SA_NOCLDWAIT  2
+ #define SA_SIGINFO    4
+ #define SA_ONSTACK    0x08000000
+ #define SA_RESTART    0x10000000
+ #define SA_NODEFER    0x40000000
+ #define SA_RESETHAND  0x80000000
+ #define SA_RESTORER   0x04000000
+
+#define SIGEV_SIGNAL 0
+#define SIGEV_NONE 1
+#define SIGEV_THREAD 2
+
+#define SIGRTMIN 35
+
+#define _NSIG 65
+
 union sigval {
   int sigval_int;
   void *sigval_ptr;

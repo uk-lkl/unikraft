@@ -35,13 +35,9 @@
 
 #include <stdint.h>
 #include <sys/time.h>
-#include <signal.h>
-#include <time.h>
-#include <unistd.h>
-#include <errno.h>
-#include <lk/kernel/thread.h>
-#include <lk/kernel/event.h>
-#include <lk/kernel/timer.h>
+#include <linuxu/signal.h>
+#include <linuxu/time.h>
+#include <linuxu/types.h>
 #include <uk/plat/time.h>
 #include <common/events.h>
 #include <uk/assert.h>
@@ -54,6 +50,18 @@ static struct sigevent sigevp;
 static struct itimerspec ispec;
 static timer_t timerid = 0;
 static volatile uint64_t ticks = 0;
+
+/* XXX: from musl/src/signal/sigemptyset.c */
+static int sigemptyset(sigset_t *set)
+{
+  set->__bits[0] = 0;
+  if (sizeof(long)==4 || _NSIG > 65) set->__bitss[1] = 0;
+  if (sizeof(long)==4 && _NSIG > 65) {
+    set->__bits[2] = 0;
+    set->__bits[3] = 0;
+  }
+  return 0;
+}
 
 static void timer_handler(int signum, siginfo_t *info, void *ctx)
 {
@@ -71,36 +79,40 @@ __nsec ukplat_monotonic_clock(void)
 
 void ukplat_time_init(void)
 {
+  int ret;
   sigact.sa_sigaction = timer_handler;
   sigact.sa_flags = SA_SIGINFO | SA_RESTART;
   sigemptyset(&sigact.sa_mask);
-  if (sigaction(SIGRTMIN + 1, &sigact, NULL) < 0) {
-    perror("sigaction error");
-    exit(1);
+  ret = sys_sigaction(SIGRTMIN + 1, &sigact, NULL);
+  if (ret < 0) {
+    uk_printk("Error sigaction: %d\n", ret);
+    return;
   }
 
   sigevp.sigev_notify = SIGEV_SIGNAL;
   sigevp.sigev_signo = SIGRTMIN + 1;
-  if (timer_create(CLOCK_REALTIME, &sigevp, &timerid) < 0) {
-    perror("timer_create error");
-    exit(1);
+  ret = sys_timer_create(CLOCK_REALTIME, &sigevp, &timerid);
+  if (ret < 0) {
+    uk_printk("Error timer_create: %d\n", ret);
+    return;
   }
 
   ispec.it_interval.tv_sec = 0;
   ispec.it_interval.tc_nsec = 10000000;
   ispec.it_value.tv_sec = 0;
   ispec.it_value.tv_nsec = 0;
-  if (timer_settime(timerid, 0, &ispec, NULL) < 0) {
-    perror("timer_settime error");
-    exit(1);
+  ret = sys_timer_settime(timerid, 0, &ispec, NULL);
+  if (ret < 0) {
+    uk_printk("Error timer_create: %d\n", ret);
+    return;
   }
 }
 
 void ukplat_time_fini(void)
 {
-  if (timer_delete(timerid) < 0) {
-    perror("timer_delete error");
-    exit(1);
+  int ret = sys_timer_delete(timerid);
+  if (ret < 0) {
+    uk_printk("Error time_delete: %d\n", ret);
   }
 }
 
