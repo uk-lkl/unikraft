@@ -2,6 +2,6 @@ vfscore_alloc_fd
 vfscore_put_fd
 vfscore_install_fd
 vfscore_get_file
-close
-write
-read
+vfscore_close
+vfscore_write
+vfscore_read

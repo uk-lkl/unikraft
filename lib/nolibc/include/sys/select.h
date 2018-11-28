@@ -56,9 +56,9 @@ typedef unsigned long __fd_mask;
 
 #define _NFDBITS (sizeof(__fd_mask) * 8) /* bits per mask */
 
-typedef struct fd_set {
+typedef struct _fd_set {
 	__fd_mask __fds_bits[howmany(FD_SETSIZE, _NFDBITS)];
-} fd_set;
+} _fd_set;
 
 #ifdef __cplusplus
 }

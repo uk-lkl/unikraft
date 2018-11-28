@@ -40,7 +40,7 @@
 #include <uk/assert.h>
 
 
-int close(int fd)
+int vfscore_close(int fd)
 {
 	struct vfscore_file *file = vfscore_get_file(fd);
 
@@ -58,7 +58,7 @@ int close(int fd)
 	return file->fops->close(file);
 }
 
-ssize_t write(int fd, const void *buf, size_t count)
+ssize_t vfscore_write(int fd, const void *buf, size_t count)
 {
 	struct vfscore_file *file = vfscore_get_file(fd);
 
@@ -77,7 +77,7 @@ ssize_t write(int fd, const void *buf, size_t count)
 	return file->fops->write(file, buf, count);
 }
 
-ssize_t read(int fd, void *buf, size_t count)
+ssize_t vfscore_read(int fd, void *buf, size_t count)
 {
 	struct vfscore_file *file = vfscore_get_file(fd);
 
