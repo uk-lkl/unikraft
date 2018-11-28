@@ -39,7 +39,6 @@
 
 #include <stdlib.h>
 #include <stdint.h>
-#include <common/hypervisor.h>
 #include <common/sched.h>
 #include <uk/sched.h>
 #include <uk/list.h>

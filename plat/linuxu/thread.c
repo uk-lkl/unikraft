@@ -36,6 +36,7 @@
  * Ported from Mini-OS
  */
 
+#include <ucontext.h>
 #include <uk/sched.h>
 #include <uk/plat/thread.h>
 #include <common/sched.h>
