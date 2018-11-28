@@ -35,11 +35,11 @@
 
 #include <stdint.h>
 #include <sys/time.h>
+#include <linuxu/syscall.h>
 #include <linuxu/signal.h>
 #include <linuxu/time.h>
 #include <linuxu/types.h>
 #include <uk/plat/time.h>
-#include <common/events.h>
 #include <uk/assert.h>
 
 /************************************************************************
@@ -55,7 +55,7 @@ static volatile uint64_t ticks = 0;
 static int sigemptyset(sigset_t *set)
 {
   set->__bits[0] = 0;
-  if (sizeof(long)==4 || _NSIG > 65) set->__bitss[1] = 0;
+  if (sizeof(long)==4 || _NSIG > 65) set->__bits[1] = 0;
   if (sizeof(long)==4 && _NSIG > 65) {
     set->__bits[2] = 0;
     set->__bits[3] = 0;
@@ -63,7 +63,9 @@ static int sigemptyset(sigset_t *set)
   return 0;
 }
 
-static void timer_handler(int signum, siginfo_t *info, void *ctx)
+static void timer_handler(__attribute__ ((unused)) int signum,
+                          __attribute__ ((unused)) siginfo_t *info,
+                          __attribute__ ((unused)) void *ctx)
 {
   ticks += 10;
 }
@@ -98,7 +100,7 @@ void ukplat_time_init(void)
   }
 
   ispec.it_interval.tv_sec = 0;
-  ispec.it_interval.tc_nsec = 10000000;
+  ispec.it_interval.tv_nsec = 10000000;
   ispec.it_value.tv_sec = 0;
   ispec.it_value.tv_nsec = 0;
   ret = sys_timer_settime(timerid, 0, &ispec, NULL);
