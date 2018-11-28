@@ -41,7 +41,6 @@
 #include <stdint.h>
 #include <common/hypervisor.h>
 #include <common/sched.h>
-#include <xen-x86/irq.h>
 #include <uk/sched.h>
 #include <uk/list.h>
 #include <uk/assert.h>

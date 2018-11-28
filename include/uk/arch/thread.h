@@ -36,14 +36,14 @@
 #ifndef __UKARCH_THREAD_H__
 #define __UKARCH_THREAD_H__
 
+#define <ucontext.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 struct ukplat_thread_ctx {
-	/* keep in that order */
-	unsigned long sp;  /* Stack pointer */
-	unsigned long ip;  /* Instruction pointer */
+  ucontext_t context;
 };
 
 #ifdef __cplusplus
