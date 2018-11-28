@@ -35,131 +35,32 @@
 
 #include <stdint.h>
 #include <sys/time.h>
+#include <signal.h>
+#include <time.h>
+#include <unistd.h>
+#include <errno.h>
+#include <lk/kernel/thread.h>
+#include <lk/kernel/event.h>
+#include <lk/kernel/timer.h>
 #include <uk/plat/time.h>
-#include <common/hypervisor.h>
 #include <common/events.h>
-#include <xen-x86/cpu.h>
-#include <xen-x86/irq.h>
 #include <uk/assert.h>
 
 /************************************************************************
  * Time functions
  *************************************************************************/
+static struct sigaction sigact;
+static struct sigevent sigevp;
+static struct itimerspec ispec;
+static timer_t timerid = 0;
+static volatile uint64_t ticks = 0;
 
-/* These are peridically updated in shared_info, and then copied here. */
-struct shadow_time_info {
-	uint64_t tsc_timestamp;     /* TSC at last update of time vals.  */
-	uint64_t system_timestamp;  /* Time, in nanosecs, since boot.    */
-	uint32_t tsc_to_nsec_mul;
-	uint32_t tsc_to_usec_mul;
-	int tsc_shift;
-	uint32_t version;
-};
-
-#if 0 /* TODO */
-static struct timespec shadow_ts;
-#endif
-static uint32_t shadow_ts_version;
-
-static struct shadow_time_info shadow;
-
-
-/* TODO move this where it belongs: */
-#ifndef rmb
-#define rmb()  __asm__ __volatile__("lock; addl $0,0(%%esp)" : : : "memory")
-#endif
-
-#define HANDLE_USEC_OVERFLOW(_tv)			\
-	do {						\
-		while ((_tv)->tv_usec >= 1000000) {	\
-			(_tv)->tv_usec -= 1000000;	\
-			(_tv)->tv_sec++;		\
-		}					\
-	} while (0)
-
-static inline int time_values_up_to_date(void)
+static void timer_handler(int signum, siginfo_t *info, void *ctx)
 {
-	struct vcpu_time_info *src = &HYPERVISOR_shared_info->vcpu_info[0].time;
-
-	return (shadow.version == src->version);
+  ticks += 10;
+  if (thread_timer_tick() == INT_RESCHEDULE)
+    thread_preempt();
 }
-
-static inline int wc_values_up_to_date(void)
-{
-	shared_info_t *s = HYPERVISOR_shared_info;
-
-	return (shadow_ts_version == s->wc_version);
-}
-
-/*
- * Scale a 64-bit delta by scaling and multiplying by a 32-bit fraction,
- * yielding a 64-bit result.
- */
-static inline uint64_t scale_delta(uint64_t delta, uint32_t mul_frac, int shift)
-{
-	uint64_t product;
-#ifdef __i386__
-	uint32_t tmp1, tmp2;
-#endif
-
-	if (shift < 0)
-		delta >>= -shift;
-	else
-		delta <<= shift;
-
-#ifdef __i386__
-	__asm__(
-		"mul  %5       ; "
-		"mov  %4,%%eax ; "
-		"mov  %%edx,%4 ; "
-		"mul  %5       ; "
-		"add  %4,%%eax ; "
-		"xor  %5,%5    ; "
-		"adc  %5,%%edx ; "
-		: "=A" (product), "=r" (tmp1), "=r" (tmp2)
-		: "a" ((uint32_t)delta), "1" ((uint32_t)(delta >> 32)), "2" (mul_frac)
-	);
-#else
-	__asm__(
-		"mul %%rdx ; shrd $32,%%rdx,%%rax"
-		: "=a" (product) : "0" (delta), "d" ((uint64_t)mul_frac)
-	);
-#endif
-
-	return product;
-}
-
-
-static unsigned long get_nsec_offset(void)
-{
-	uint64_t now, delta;
-
-	rdtscll(now);
-	delta = now - shadow.tsc_timestamp;
-
-	return scale_delta(delta, shadow.tsc_to_nsec_mul, shadow.tsc_shift);
-}
-
-
-static void get_time_values_from_xen(void)
-{
-	struct vcpu_time_info *src = &HYPERVISOR_shared_info->vcpu_info[0].time;
-
-	do {
-		shadow.version = src->version;
-		rmb();
-		shadow.tsc_timestamp     = src->tsc_timestamp;
-		shadow.system_timestamp  = src->system_time;
-		shadow.tsc_to_nsec_mul   = src->tsc_to_system_mul;
-		shadow.tsc_shift         = src->tsc_shift;
-		rmb();
-	} while ((src->version & 1) | (shadow.version ^ src->version));
-
-	shadow.tsc_to_usec_mul = shadow.tsc_to_nsec_mul / 1000;
-}
-
-
-
 
 /* monotonic_clock(): returns # of nanoseconds passed since time_init()
  *		Note: This function is required to return accurate
@@ -167,109 +68,50 @@ static void get_time_values_from_xen(void)
  */
 __nsec ukplat_monotonic_clock(void)
 {
-	uint64_t time;
-	uint32_t local_time_version;
-
-	do {
-		local_time_version = shadow.version;
-		rmb();
-		time = shadow.system_timestamp + get_nsec_offset();
-		if (!time_values_up_to_date())
-			get_time_values_from_xen();
-		rmb();
-	} while (local_time_version != shadow.version);
-
-	return time;
+  return ticks;
 }
 
-#if 0 /* TODO */
-
-static void update_wallclock(void)
-{
-	shared_info_t *s = HYPERVISOR_shared_info;
-
-	do {
-		shadow_ts_version = s->wc_version;
-		rmb();
-		shadow_ts.tv_sec  = s->wc_sec;
-		shadow_ts.tv_nsec = s->wc_nsec;
-		rmb();
-	} while ((s->wc_version & 1) | (shadow_ts_version ^ s->wc_version));
-}
-#endif
-
-#if 0 /* TODO */
-int gettimeofday(struct timeval *tv, void *tz)
-{
-	uint64_t nsec = monotonic_clock();
-
-	if (!wc_values_up_to_date())
-		update_wallclock();
-
-	nsec += shadow_ts.tv_nsec;
-
-	tv->tv_sec = shadow_ts.tv_sec;
-	tv->tv_sec += NSEC_TO_SEC(nsec);
-	tv->tv_usec = NSEC_TO_USEC(nsec % 1000000000UL);
-
-	return 0;
-}
-#endif
-
-
-void block_domain(__snsec until)
-{
-	UK_ASSERT(irqs_disabled());
-
-	if ((__snsec) ukplat_monotonic_clock() < until) {
-		HYPERVISOR_set_timer_op(until);
-#ifdef CONFIG_PARAVIRT
-		HYPERVISOR_sched_op(SCHEDOP_block, 0);
-#else
-		local_irq_enable();
-		asm volatile("hlt" : : : "memory");
-#endif
-		local_irq_disable();
-		HYPERVISOR_set_timer_op(0);
-	}
-}
-
-static void timer_handler(evtchn_port_t ev __unused,
-		struct pt_regs *regs __unused, void *ign __unused)
-{
-	__nsec until = ukplat_monotonic_clock() + ukarch_time_msec_to_nsec(1);
-
-	HYPERVISOR_set_timer_op(until);
-}
-
-
-
-static evtchn_port_t port;
 void ukplat_time_init(void)
 {
-	uk_printd(DLVL_EXTRA, "Initializing timer interface\n");
-	port = bind_virq(VIRQ_TIMER, &timer_handler, NULL);
-	unmask_evtchn(port);
+  sigact.sa_sigaction = timer_handler;
+  sigact.sa_flags = SA_SIGINFO | SA_RESTART;
+  sigemptyset(&sigact.sa_mask);
+  if (sigaction(SIGRTMIN + 1, &sigact, NULL) < 0) {
+    perror("sigaction error");
+    exit(1);
+  }
+
+  sigevp.sigev_notify = SIGEV_SIGNAL;
+  sigevp.sigev_signo = SIGRTMIN + 1;
+  if (timer_create(CLOCK_REALTIME, &sigevp, &timerid) < 0) {
+    perror("timer_create error");
+    exit(1);
+  }
+
+  ispec.it_interval.tv_sec = 0;
+  ispec.it_interval.tc_nsec = 10000000;
+  ispec.it_value.tv_sec = 0;
+  ispec.it_value.tv_nsec = 0;
+  if (timer_settime(timerid, 0, &ispec, NULL) < 0) {
+    perror("timer_settime error");
+    exit(1);
+  }
 }
 
 void ukplat_time_fini(void)
 {
-	/* Clear any pending timer */
-	HYPERVISOR_set_timer_op(0);
-	unbind_evtchn(port);
+  if (timer_delete(timerid) < 0) {
+    perror("timer_delete error");
+    exit(1);
+  }
 }
 
 #ifdef CONFIG_MIGRATION /* TODO wip */
 void suspend_time(void)
 {
-	/* Clear any pending timer */
-	HYPERVISOR_set_timer_op(0);
-	unbind_evtchn(port);
 }
 
 void resume_time(void)
 {
-	port = bind_virq(VIRQ_TIMER, &timer_handler, NULL);
-	unmask_evtchn(port);
 }
 #endif
