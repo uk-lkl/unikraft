@@ -1,0 +1,3 @@
+[submodule "frankenlibc"]
+	path = frankenlibc
+	url = git@github.com:retrage/frankenlibc.git
