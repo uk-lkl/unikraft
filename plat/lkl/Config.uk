@@ -1,5 +1,5 @@
 menuconfig PLAT_LKL
-	bool "Stub platform for Linux Kernel Library"
+	bool "Platform for Linux Kernel Library (x86_64 Linux only)"
 	default n
 	depends on ARCH_LKL
 	select LIBLKL

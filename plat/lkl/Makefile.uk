@@ -11,3 +11,7 @@ $(eval $(call addplatlib,lkl,liblklplat))
 ##
 ## Platform library definitions
 ##
+LIBLKLPLAT_ASINCLUDES-y		+= -I$(LIBLKLPLAT_BASE)/include
+LIBLKLPLAT_ASINCLUDES-y		+= -I$(UK_PLAT_COMMON_BASE)/include
+LIBLKLPLAT_CINCLUDES-y		+= -I$(LIBLKLPLAT_BASE)/include
+LIBLKLPLAT_CINCLUDES-y		+= -I$(UK_PLAT_COMMON_BASE)/include
