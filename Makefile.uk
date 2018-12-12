@@ -17,6 +17,7 @@ CXXFLAGS    += -U __linux__ -U __FreeBSD__ -U __sun__
 CXXFLAGS    += -fno-stack-protector -fno-omit-frame-pointer -fno-tree-sra
 CXXFLAGS    += -Wall -Wextra
 CXXINCLUDES += -nostdinc -nostdlib -I$(CONFIG_UK_BASE)/include
+endif
 
 GOCFLAGS    += -U __linux__ -U __FreeBSD__ -U __sun__
 GOCFLAGS    += -fno-stack-protector -fno-omit-frame-pointer -fno-tree-sra
@@ -28,7 +29,6 @@ GOCINCLUDES += -nostdinc -nostdlib -I$(CONFIG_UK_BASE)/include
 # Unix style magic numbers, mark the output as OMAGIC.
 LIBLDFLAGS  += -nostdinc -nostdlib -Wl,--omagic -Wl,-r -Wl,-d -Wl,--build-id=none
 LDFLAGS     += -nostdinc -nostdlib -Wl,--omagic -Wl,--build-id=none
-endif
 
 CFLAGS-$(CONFIG_OPTIMIZE_NONE)            += -O0 -fno-optimize-sibling-calls -fno-tree-vectorize
 CXXFLAGS-$(CONFIG_OPTIMIZE_NONE)          += -O0 -fno-optimize-sibling-calls -fno-tree-vectorize
