@@ -55,5 +55,6 @@ if !LIBLKL
 	source "lib/posix-libdl/Config.uk"
 	source "lib/uklibparam/Config.uk"
 	source "lib/uktime/Config.uk"
+else
+	source "lib/lkl/Config.uk"
 endif
-source "lib/lkl/Config.uk"
