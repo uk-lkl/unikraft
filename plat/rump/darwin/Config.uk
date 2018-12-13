@@ -1,0 +1,12 @@
+choice
+	prompt "Rump Darwin Host Architecture"
+	default RUMP_DARWIN_X86_64
+	help
+	  Select the target Darwin CPU architecture.
+
+config RUMP_DARWIN_X86_64
+       bool "x86 compatible (64 bits)"
+config RUMP_DARWIN_I386
+       bool "x86 compatible (32 bits)"
+
+endchoice

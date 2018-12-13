@@ -1,0 +1,22 @@
+choice
+	prompt "Rump Linux Host Architecture"
+	default RUMP_LINUX_X86_64
+	help
+	  Select the target Linux CPU architecture.
+
+config RUMP_LINUX_X86_64
+       bool "x86 compatible (64 bits)"
+config RUMP_LINUX_I386
+       bool "x86 compatible (32 bits)"
+config RUMP_LINUX_ARM_64
+       bool "ARM64 compatible (64 bits)"
+config RUMP_LINUX_ARM_32
+       bool "ARM compatible (32 bits)"
+config RUMP_LINUX_MIPS
+       bool "MIPS compatible"
+config RUMP_LINUX_POWERPC64
+       bool "PowerPC64 compatible (64 bits)"
+config RUMP_LINUX_POWER
+       bool "PowerPC compatible (32 bits)"
+
+endchoice

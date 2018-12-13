@@ -1,0 +1,12 @@
+choice
+	prompt "Rump FreeBSD Host Architecture"
+	default RUMP_FREEBSD_X86_64
+	help
+	  Select the target FreeBSD CPU architecture.
+
+config RUMP_FREEBSD_X86_64
+       bool "x86 compatible (64 bits)"
+config RUMP_FREEBSD_I386
+       bool "x86 compatible (32 bits)"
+
+endchoice

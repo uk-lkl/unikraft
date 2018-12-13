@@ -1,0 +1,18 @@
+choice
+	prompt "Rump NetBSD Host Architecture"
+	default RUMP_NETBSD_X86_64
+	help
+	  Select the target NetBSD CPU architecture.
+
+config RUMP_NETBSD_X86_64
+       bool "x86 compatible (64 bits)"
+config RUMP_NETBSD_I386
+       bool "x86 compatible (32 bits)"
+config RUMP_NETBSD_ARM_32
+       bool "ARM compatible (32 bits)"
+config RUMP_NETBSD_MIPS
+       bool "MIPS compatible"
+config RUMP_NETBSD_POWER
+       bool "PowerPC compatible (32 bits)"
+
+endchoice

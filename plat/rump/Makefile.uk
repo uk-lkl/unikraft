@@ -1,0 +1,26 @@
+##
+## Rump platform registration
+##
+$(eval $(call addplat_s,rump,$(CONFIG_PLAT_RUMP)))
+
+##
+## Rump platform library registration
+##
+$(eval $(call addplatlib,rump,librumpplat))
+
+##
+## Platform library definitions
+##
+ifeq ($(CONFIG_RUMP_LINUX),y)
+include $(LIBRUMPPLAT_BASE)/linux/Makefile.uk
+else ifeq ($(CONFIG_RUMP_DARWIN),y)
+include $(LIBRUMPPLAT_BASE)/darwin/Makefile.uk
+else ifeq ($(CONFIG_RUMP_FREEBSD),y)
+include $(LIBRUMPPLAT_BASE)/freebsd/Makefile.uk
+else ifeq ($(CONFIG_RUMP_NETBSD),y)
+include $(LIBRUMPPLAT_BASE)/netbsd/Makefile.uk
+else ifeq ($(CONFIG_RUMP_QEMU_ARM),y)
+include $(LIBRUMPPLAT_BASE)/qemu-arm/Makefile.uk
+else ifeq ($(CONFIG_RUMP_SPIKE),y)
+include $(LIBRUMPPLAT_BASE)/spike/Makefile.uk
+endif

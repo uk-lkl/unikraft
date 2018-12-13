@@ -1,0 +1,44 @@
+menuconfig PLAT_RUMP
+       bool "Rump Platform"
+       default n
+       depends on ARCH_LKL
+       select LIBLKL
+       help
+                Create a Unikraft image that runs with Rump.
+
+if (PLAT_RUMP)
+choice
+       prompt "Host Platform"
+       default RUMP_LINUX
+       help
+                Select the host platform.
+
+config RUMP_LINUX
+       bool "Linux Host"
+config RUMP_DARWIN
+       bool "Darwin Host"
+config RUMP_FREEBSD
+       bool "FreeBSD Host"
+config RUMP_NETBSD
+       bool "NetBSD Host"
+config RUMP_QEMU_ARM
+       bool "QEMU ARM Host"
+config RUMP_SPIKE
+       bool "Spike Host"
+
+endchoice
+
+if (RUMP_LINUX)
+       source "plat/rump/linux/Config.uk"
+endif
+if (RUMP_DARWIN)
+       source "plat/rump/darwin/Config.uk"
+endif
+if (RUMP_FREEBSD)
+       source "plat/rump/freebsd/Config.uk"
+endif
+if (RUMP_NETBSD)
+       source "plat/rump/netbsd/Config.uk"
+endif
+
+endif
