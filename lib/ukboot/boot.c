@@ -63,6 +63,9 @@
 #ifdef CONFIG_LIBUKLIBPARAM
 #include <uk/libparam.h>
 #endif /* CONFIG_LIBUKLIBPARAM */
+#if CONFIG_LKL
+#include <lkl_host.h>
+#endif
 
 int main(int argc, char *argv[]) __weak;
 #ifdef CONFIG_LIBLWIP
@@ -247,6 +250,10 @@ void ukplat_entry(int argc, char *argv[])
 	s = uk_sched_default_init(a);
 	if (unlikely(!s))
 		UK_CRASH("Could not initialize the scheduler\n");
+#endif
+
+#if CONFIG_LIBLKL
+	lkl_thread_init();
 #endif
 
 	tma.argc = argc - kern_args;
