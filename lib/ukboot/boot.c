@@ -43,6 +43,7 @@
 
 #if CONFIG_LIBUKALLOC && CONFIG_LIBUKALLOCBBUDDY && CONFIG_LIBUKBOOT_INITALLOC
 #include <uk/allocbbuddy.h>
+#include <timer.h>
 #endif
 #if CONFIG_LIBUKSCHED
 #include <uk/sched.h>
@@ -63,7 +64,7 @@
 #ifdef CONFIG_LIBUKLIBPARAM
 #include <uk/libparam.h>
 #endif /* CONFIG_LIBUKLIBPARAM */
-#if CONFIG_LKL
+#if CONFIG_LIBLKL
 #include <lkl_host.h>
 #endif
 
@@ -239,6 +240,10 @@ void ukplat_entry(int argc, char *argv[])
 	rc = ukplat_irq_init(a);
 	if (unlikely(rc != 0))
 		UK_CRASH("Could not initialize the platform IRQ subsystem\n");
+
+	rc = ukplat_timer_callback_init(a);
+        if (unlikely(rc != 0))
+        	UK_CRASH("Could not initialize timer callbacks\n");
 #endif
 
 	/* On most platforms the timer depend on an initialized IRQ subsystem */
