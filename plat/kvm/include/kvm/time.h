@@ -1,7 +1,6 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 /*
  * Authors: Costin Lupu <costin.lupu@cs.pub.ro>
- *          Florian Schmidt <florian.schmidt@neclab.eu>
  *
  * Copyright (c) 2018, NEC Europe Ltd., NEC Corporation. All rights reserved.
  *
@@ -32,35 +31,12 @@
  *
  * THIS HEADER MAY NOT BE EXTRACTED OR MODIFIED IN ANY WAY.
  */
-#ifndef __LINUXU_TIME_H__
-#define __LINUXU_TIME_H__
+
+#ifndef __KVM_TIME_H_
+#define __KVM_TIME_H_
 
 #include <uk/list.h>
 #include <uk/plat/time.h>
-#include <linuxu/signal.h>
-
-#define TIMER_INTVAL_NSEC    UKPLAT_TIME_TICK_NSEC
-#define TIMER_SIGNUM         SIGALRM
-
-
-/* POSIX definitions */
-
-#define K_CLOCK_REALTIME       0
-#define K_CLOCK_MONOTONIC      1
-
-typedef int k_clockid_t;
-
-typedef int k_timer_t;
-
-struct k_timespec {
-	long tv_sec;
-	long tv_nsec;
-};
-
-struct k_itimerspec {
-	struct k_timespec it_interval;
-	struct k_timespec it_value;
-};
 
 struct callback_handler {
 	timer_callback_func_t func;
@@ -69,4 +45,4 @@ struct callback_handler {
         UK_SLIST_ENTRY(struct callback_handler) entries;
 };
 
-#endif /* __LINUXU_TIME_H__ */
+#endif /* __KVM_TIME_H_ */
