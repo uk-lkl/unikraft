@@ -72,6 +72,7 @@ strdup
 strlcpy
 strlcat
 strncat
+strtok_r
 strerror_r
 strerror
 
