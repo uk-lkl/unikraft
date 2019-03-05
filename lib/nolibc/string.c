@@ -348,6 +348,15 @@ size_t strlcat(char *d, const char *s, size_t n)
 	return l + strlcpy(d+l, s, n-l);
 }
 
+char *strncat(char *d, const char *s, size_t n)
+{
+	char *a = d;
+	d += strlen(d);
+	while (n && *s) n--, *d++ = *s++;
+	*d++ = 0;
+	return a;
+}
+
 /* GNU-specific version of strerror_r */
 char *strerror_r(int errnum, char *buf, size_t buflen)
 {

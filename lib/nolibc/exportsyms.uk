@@ -71,6 +71,7 @@ strndup
 strdup
 strlcpy
 strlcat
+strncat
 strerror_r
 strerror
 
