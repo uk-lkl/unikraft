@@ -56,6 +56,7 @@ SECTIONS
 		*(.rodata)
 		*(.rodata.*)
 		KEEP (*(__modver))
+		KEEP (*(__param))
 	}
 	_erodata = .;
 
